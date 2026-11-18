@@ -6,16 +6,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.studymate.data.Task
 
 @Composable
 fun TaskFormScreen(
-    isEditing: Boolean,
+    task: Task?,
     onSave: (String, String, Boolean) -> Unit,
     onBack: () -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var completed by remember { mutableStateOf(false) }
+    var title by remember(task) {
+        mutableStateOf(task?.title ?: "")
+    }
+
+    var description by remember(task) {
+        mutableStateOf(task?.description ?: "")
+    }
+
+    var completed by remember(task) {
+        mutableStateOf(task?.isCompleted ?: false)
+    }
 
     Column(
         modifier = Modifier
@@ -23,9 +32,8 @@ fun TaskFormScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
         Text(
-            text = if (isEditing) "Edit Task" else "Add Task",
+            text = if (task == null) "Add Task" else "Edit Task",
             style = MaterialTheme.typography.headlineMedium
         )
 

@@ -1,19 +1,11 @@
 
 package com.example.studymate
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.example.studymate.ui.TaskFormScreen
 
 class TaskFormActivity : ComponentActivity() {
 
@@ -23,32 +15,24 @@ class TaskFormActivity : ComponentActivity() {
         val taskId = intent.getIntExtra("TASK_ID", -1)
 
         setContent {
-            TaskFormPlaceholder(
+            TaskFormScreen(
                 isEditing = taskId != -1,
-                onBack = { finish() }
+
+                onSave = { title, description, completed ->
+
+                    val result = Intent()
+                    result.putExtra("TASK_TITLE", title)
+                    result.putExtra("TASK_DESCRIPTION", description)
+                    result.putExtra("TASK_COMPLETED", completed)
+
+                    setResult(RESULT_OK, result)
+                    finish()
+                },
+
+                onBack = {
+                    finish()
+                }
             )
-        }
-    }
-}
-
-@Composable
-fun TaskFormPlaceholder(
-    isEditing: Boolean,
-    onBack: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = if (isEditing) "Edit Task" else "Add Task"
-        )
-
-        Button(onClick = onBack) {
-            Text(text = "Back")
         }
     }
 }

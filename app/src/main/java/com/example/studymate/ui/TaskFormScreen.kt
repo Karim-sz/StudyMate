@@ -6,16 +6,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.studymate.data.Task
 
 @Composable
 fun TaskFormScreen(
-    isEditing: Boolean,
-    onSave: (String, String, Boolean) -> Unit,
-    onBack: () -> Unit
+    task: Task?,
+    onSave: (String, String, Boolean) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var completed by remember { mutableStateOf(false) }
+    var title by remember(task) {
+        mutableStateOf(task?.title ?: "")
+    }
+
+    var description by remember(task) {
+        mutableStateOf(task?.description ?: "")
+    }
+
+    var completed by remember(task) {
+        mutableStateOf(task?.isCompleted ?: false)
+    }
 
     Column(
         modifier = Modifier
@@ -25,7 +33,7 @@ fun TaskFormScreen(
     ) {
 
         Text(
-            text = if (isEditing) "Edit Task" else "Add Task",
+            text = if (task != null) "Edit Task" else "Add Task",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -48,6 +56,7 @@ fun TaskFormScreen(
                 checked = completed,
                 onCheckedChange = { completed = it }
             )
+
             Text("Completed")
         }
 
@@ -59,13 +68,6 @@ fun TaskFormScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save Task")
-        }
-
-        OutlinedButton(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Back")
         }
     }
 }

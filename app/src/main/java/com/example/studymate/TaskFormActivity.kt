@@ -4,51 +4,82 @@ package com.example.studymate
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import com.example.studymate.data.Task
+import com.example.studymate.data.TaskDataController
+import com.example.studymate.ui.TaskFormScreen
 
 class TaskFormActivity : ComponentActivity() {
+
+    private lateinit var taskController: TaskDataController
+
+    private val currentTask = mutableStateOf<Task?>(null)
+    private val isLoading = mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        taskController = TaskDataController(this, lifecycleScope)
+
         val taskId = intent.getIntExtra("TASK_ID", -1)
 
-        setContent {
-            TaskFormPlaceholder(
-                isEditing = taskId != -1,
-                onBack = { finish() }
-            )
+        if (taskId != -1) {
+            isLoading.value = true
+
+            taskController.loadTask(taskId) { task ->
+                currentTask.value = task
+                isLoading.value = false
+            }
         }
-    }
-}
 
-@Composable
-fun TaskFormPlaceholder(
-    isEditing: Boolean,
-    onBack: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = if (isEditing) "Edit Task" else "Add Task"
-        )
+        setContent {
+            if (isLoading.value) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                TaskFormScreen(
+                    task = currentTask.value,
 
-        Button(onClick = onBack) {
-            Text(text = "Back")
+                    onSave = { title, description, completed ->
+
+                        if (taskId == -1) {
+                            taskController.addTask(
+                                title = title,
+                                description = description,
+                                isCompleted = completed
+                            ) {
+                                finish()
+                            }
+                        } else {
+                            currentTask.value?.let { task ->
+                                taskController.updateTask(
+                                    task.copy(
+                                        title = title,
+                                        description = description,
+                                        isCompleted = completed
+                                    )
+                                ) {
+                                    finish()
+                                }
+                            }
+                        }
+                    },
+
+                    onBack = {
+                        finish()
+                    }
+                )
+            }
         }
     }
 }
